@@ -9,7 +9,8 @@ def create_db():
     cursor.execute("""CREATE TABLE IF NOT EXISTS card(id INTEGER PRIMARY KEY, number TEXT, pin TEXT, balance INTEGER DEFAULT 0);""").close()
     con.commit()
 
-class Card():
+
+class Card:
     def __init__(self):
         iin = '400000'
         generate_num = iin + ''.join([str(random.randint(0, 9)) for _ in range(10)])
@@ -18,16 +19,14 @@ class Card():
         cursor = con.cursor()
         self.id = con.cursor().execute('SELECT MAX(id) + 1 FROM card').fetchone()
         cursor.close()
-        self.balance = 0
         self.status = 'not_logged'
 
+    @staticmethod
     def gen_checksum(num):
         mult = [int(x) * 2 if (index + 1) % 2 != 0 else int(x) for index, x in enumerate([*num[:-1]])]
         sum_ = sum([(x - 9) if x > 9 else x for x in mult]) % 10
         checksum = 10 - sum_ if sum_ != 0 else 0
         return str(checksum)
-
-
 
     def get_card_number(self):
         return self.card_number
@@ -63,15 +62,13 @@ class Card():
         if self.status != 'not_logged':
             if choice == '1':
                 cursor = con.cursor()
-                cursor.execute('SELECT balance FROM card WHERE number = ?', self.status).close()
+                print(cursor.execute('SELECT balance FROM card WHERE number = ?', self.status).close())
                 con.commit()
-                print(self.balance)
 
             if choice == '2':
                 income = int(input('Enter income:'))
                 cursor = con.cursor()
-                inp_income = income, self.status
-                cursor.execute('UPDATE card SET balance = balance + ? WHERE number = ?', inp_income).close()
+                cursor.execute('UPDATE card SET balance = balance + ? WHERE number = ?', (income, self.status)).close()
                 con.commit()
                 print('Income was added!')
 
@@ -91,7 +88,6 @@ class Card():
                     cursor.close()
                     if not check_balance:
                         print('Not enough money!')
-                        Card.run(self)
                     else:
                         cursor = con.cursor()
                         cursor.execute("UPDATE card SET balance = balance - ? WHERE number = ?", (sum_of_transfer, self.status))
@@ -99,7 +95,6 @@ class Card():
                         con.commit()
                         cursor.close()
                         print('Success!')
-                        Card.run(self)
 
             if choice == '4':
                 cursor = con.cursor()
@@ -110,7 +105,6 @@ class Card():
                 Card.log_out(self)
             if choice == '0':
                 exit()
-
 
     @staticmethod
     def create_card():
@@ -125,8 +119,7 @@ class Card():
             check_num = input('Enter your card number:')
             check_pin = input('Enter your PIN:')
             cursor = con.cursor()
-            cursor.execute('SELECT number, pin FROM card')
-            num_fetch = (check_num, check_pin) in cursor.fetchall()
+            num_fetch = cursor.execute('SELECT number, pin FROM card WHERE number = ? AND pin = ?', (check_num, check_pin)).fetchall()
             cursor.close()
             try:
                 if num_fetch:
@@ -141,7 +134,7 @@ class Card():
     def log_out(self):
         self.status = 'not_logged'
 
+
 create_db()
-banking = Card()
-banking.run()
+Card().run()
 con.close()
