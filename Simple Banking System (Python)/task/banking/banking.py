@@ -2,10 +2,10 @@ import random
 import sqlite3
 
 con = sqlite3.connect('card.s3db')
-cursor = con.cursor()
 
 
 def create_db():
+    cursor = con.cursor()
     cursor.execute("""CREATE TABLE IF NOT EXISTS card(id INTEGER PRIMARY KEY, number TEXT, pin TEXT, balance INTEGER DEFAULT 0);""").close()
     con.commit()
 
@@ -15,10 +15,11 @@ class Card():
         generate_num = iin + ''.join([str(random.randint(0, 9)) for _ in range(10)])
         self.card_number = str(''.join(generate_num[:-1]) + Card.gen_checksum(generate_num))
         self.pin = ''.join([str(random.randint(0, 9)) for _ in range(4)])
+        cursor = con.cursor()
         self.id = con.cursor().execute('SELECT MAX(id) + 1 FROM card').fetchone()
+        cursor.close()
         self.balance = 0
         self.status = 'not_logged'
-        cursor.close()
 
     def gen_checksum(num):
         mult = [int(x) * 2 if (index + 1) % 2 != 0 else int(x) for index, x in enumerate([*num[:-1]])]
@@ -114,9 +115,8 @@ class Card():
     @staticmethod
     def create_card():
         card = Card()
-        new_card = card.get_id(), card.get_card_number(), card.get_pin()
         cursor = con.cursor()
-        cursor.execute('INSERT INTO card(id, number, pin) VALUES (?, ?, ?)', new_card).close()
+        cursor.execute('INSERT INTO card(id, number, pin) VALUES (?, ?, ?)', (card.get_id(), card.get_card_number(), card.get_pin())).close()
         con.commit()
         print(f'Your card has been created\nYour card number: \n{card.card_number}\nYour card PIN: \n{card.pin}')
 
