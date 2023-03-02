@@ -5,8 +5,7 @@ con = sqlite3.connect('card.s3db')
 
 
 def create_db():
-    cursor = con.cursor()
-    cursor.execute("""CREATE TABLE IF NOT EXISTS card(id INTEGER PRIMARY KEY, number TEXT, pin TEXT, balance INTEGER DEFAULT 0);""").close()
+    con.cursor().execute("""CREATE TABLE IF NOT EXISTS card(id INTEGER PRIMARY KEY, number TEXT, pin TEXT, balance INTEGER DEFAULT 0);""").close()
     con.commit()
 
 
@@ -61,14 +60,12 @@ class Card:
                 exit()
         if self.status != 'not_logged':
             if choice == '1':
-                cursor = con.cursor()
-                print(cursor.execute('SELECT balance FROM card WHERE number = ?', self.status).close())
+                print(con.cursor().execute('SELECT balance FROM card WHERE number = ?', self.status).close())
                 con.commit()
 
             if choice == '2':
                 income = int(input('Enter income:'))
-                cursor = con.cursor()
-                cursor.execute('UPDATE card SET balance = balance + ? WHERE number = ?', (income, self.status)).close()
+                con.cursor().execute('UPDATE card SET balance = balance + ? WHERE number = ?', (income, self.status)).close()
                 con.commit()
                 print('Income was added!')
 
@@ -82,23 +79,19 @@ class Card:
                 elif not num_fetch:
                     print('Such a card does not exist.')
                 else:
-                    cursor = con.cursor()
                     sum_of_transfer = int(input('Enter how much money you want to transfer:'))
-                    check_balance = cursor.execute('SELECT balance FROM card WHERE number = ? and balance > ?', (self.status, sum_of_transfer)).fetchone()
+                    check_balance = con.cursor().execute('SELECT balance FROM card WHERE number = ? and balance > ?', (self.status, sum_of_transfer)).fetchone()
                     cursor.close()
                     if not check_balance:
                         print('Not enough money!')
                     else:
-                        cursor = con.cursor()
-                        cursor.execute("UPDATE card SET balance = balance - ? WHERE number = ?", (sum_of_transfer, self.status))
-                        cursor.execute("UPDATE card SET balance = balance + ? WHERE number = ?", (sum_of_transfer, transfer_to_card))
+                        con.cursor().execute("UPDATE card SET balance = balance - ? WHERE number = ?", (sum_of_transfer, self.status))
+                        con.cursor().execute("UPDATE card SET balance = balance + ? WHERE number = ?", (sum_of_transfer, transfer_to_card)).close()
                         con.commit()
-                        cursor.close()
                         print('Success!')
 
             if choice == '4':
-                cursor = con.cursor()
-                cursor.execute('DELETE FROM card WHERE number = ?', (self.status,)).close()
+                con.cursor().execute('DELETE FROM card WHERE number = ?', (self.status,)).close()
                 con.commit()
                 print('The account has been closed!')
             if choice == '5':
@@ -109,8 +102,7 @@ class Card:
     @staticmethod
     def create_card():
         card = Card()
-        cursor = con.cursor()
-        cursor.execute('INSERT INTO card(id, number, pin) VALUES (?, ?, ?)', (card.get_id(), card.get_card_number(), card.get_pin())).close()
+        con.cursor().execute('INSERT INTO card(id, number, pin) VALUES (?, ?, ?)', (card.get_id(), card.get_card_number(), card.get_pin())).close()
         con.commit()
         print(f'Your card has been created\nYour card number: \n{card.card_number}\nYour card PIN: \n{card.pin}')
 
