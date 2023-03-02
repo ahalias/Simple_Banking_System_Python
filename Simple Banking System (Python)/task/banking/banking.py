@@ -17,7 +17,7 @@ class Card:
         self.card_number = str(''.join(generate_num[:-1]) + Card.gen_checksum(generate_num))
         self.pin = ''.join([str(random.randint(0, 9)) for _ in range(4)])
         cursor = con.cursor()
-        self.id = con.cursor().execute('SELECT MAX(id) + 1 FROM card').fetchone()
+        self.id = cursor.execute('SELECT MAX(id) + 1 FROM card').fetchone()
         cursor.close()
         self.status = 'not_logged'
 
