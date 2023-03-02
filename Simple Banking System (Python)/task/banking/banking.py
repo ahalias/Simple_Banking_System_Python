@@ -27,14 +27,8 @@ class Card:
         checksum = 10 - sum_ if sum_ != 0 else 0
         return str(checksum)
 
-    def get_card_number(self):
-        return self.card_number
-
-    def get_pin(self):
-        return self.pin
-
-    def get_id(self):
-        return self.id[0]
+    def get_card(self):
+        return (self.id[0], self.card_number, self.pin)
 
     def run(self):
         while True:
@@ -102,7 +96,7 @@ class Card:
     @staticmethod
     def create_card():
         card = Card()
-        con.cursor().execute('INSERT INTO card(id, number, pin) VALUES (?, ?, ?)', (card.get_id(), card.get_card_number(), card.get_pin())).close()
+        con.cursor().execute('INSERT INTO card(id, number, pin) VALUES (?, ?, ?)', (card.get_card())).close()
         con.commit()
         print(f'Your card has been created\nYour card number: \n{card.card_number}\nYour card PIN: \n{card.pin}')
 
